@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스마트 혈당 케어 - 마이페이지 및 기록장</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", sans-serif;
+    }
+
+    body {
+      background-color: #f4f7fa;
+      color: #1e293b;
+      line-height: 1.5;
+    }
+
+    /* 상단 네비게이션 바 */
+    .navbar {
+      background-color: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #2563eb;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: #64748b;
+      font-weight: 500;
+      font-size: 0.95rem;
+      padding-bottom: 4px;
+    }
+
+    .nav-links a.active {
+      color: #2563eb;
+      font-weight: 700;
+      border-bottom: 2px solid #2563eb;
+    }
+
+    /* 메인 컨테이너 */
+    .container {
+      max-width: 1200px;
+      margin: 32px auto;
+      padding: 0 20px;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+
+    .page-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .page-header p {
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    /* 2단 그리드 레이아웃 */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* 공통 카드 스타일 */
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      border: 1px solid #e2e8f0;
+      margin-bottom: 24px;
+    }
+
+    .card h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .sub-text {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 16px;
+    }
+
+    /* 평균 혈당 요약 박스 */
+    .avg-box {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background-color: #f8fafc;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .avg-box span {
+      display: block;
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+
+    .avg-box strong {
+      font-size: 1.2rem;
+      color: #0f172a;
+    }
+
+    .avg-box .highlight-blue {
+      color: #2563eb;
+    }
+
+    .divider {
+      width: 1px;
+      height: 36px;
+      background-color: #cbd5e1;
+    }
+
+    /* 위험도 빈도 막대 그래프 */
+    .bar-item {
+      margin-bottom: 14px;
+    }
+
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      margin-bottom: 6px;
+    }
+
+    .progress-bg {
+      width: 100%;
+      height: 10px;
+      background-color: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+    }
+
+    .progress-fill.safe { background-color: #22c55e; }
+    .progress-fill.caution { background-color: #eab308; }
+    .progress-fill.warning { background-color: #f97316; }
+    .progress-fill.danger { background-color: #ef4444; }
+
+    /* 사용자 프로필 & 설정 */
+    .profile-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 16px 0;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .profile-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background-color: #2563eb;
+      color: #ffffff;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .badge-type {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 0.78rem;
+      background-color: #eff6ff;
+      color: #2563eb;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    .form-group input[type="number"],
+    .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+
+    .toggle-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .btn-save {
+      width: 100%;
+      padding: 12px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .btn-save:hover {
+      background-color: #1d4ed8;
+    }
+
+    /* 우측 식단 및 혈당 일지 */
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .filter-btn {
+      padding: 6px 12px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: #475569;
+    }
+
+    .filter-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+      font-weight: 600;
+    }
+
+    .date-group {
+      margin-bottom: 24px;
+    }
+
+    .date-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #475569;
+      background-color: #f1f5f9;
+      padding: 6px 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+
+    .history-item:hover {
+      border-color: #94a3b8;
+    }
+
+    .item-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .time-badge {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #475569;
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 6px 10px;
+      border-radius: 8px;
+      min-width: 82px;
+      text-align: center;
+    }
+
+    /* CSS 아이콘 썸네일 (외부 이미지 파일 없이 100% 호환) */
+    .meal-icon-box {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      flex-shrink: 0;
+    }
+
+    .meal-icon-box.safe { background-color: #dcfce7; }
+    .meal-icon-box.caution { background-color: #fef9c3; }
+    .meal-icon-box.warning { background-color: #ffedd5; }
+    .meal-icon-box.danger { background-color: #fee2e2; }
+
+    .meal-info h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .meal-info .nutrients {
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .meal-info .sugar-flow {
+      font-size: 0.88rem;
+      color: #334155;
+      margin-top: 2px;
+    }
+
+    /* 4단계 위험도 배지 */
+    .risk-badge {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .risk-badge.safe { background-color: #dcfce7; color: #166534; }
+    .risk-badge.caution { background-color: #fef9c3; color: #854d0e; }
+    .risk-badge.warning { background-color: #ffedd5; color: #9a3412; }
+    .risk-badge.danger { background-color: #fee2e2; color: #991b1b; }
+
+    /* 반응형 처리 */
+    @media (max-width: 900px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .history-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .item-right {
+        align-self: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 상단 네비게이션 바 -->
+  <header class="navbar">
+    <div class="logo">🩸 스마트 혈당 케어</div>
+    <nav class="nav-links">
+      <a href="#">1. 홈/대시보드</a>
+      <a href="#">2. 혈당 예측</a>
+      <a href="#">3. 위험도 평가</a>
+      <a href="#" class="active">4. 마이페이지/기록장</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- 페이지 타이틀 -->
+    <section class="page-header">
+      <h1>마이페이지 및 혈당 기록장</h1>
+      <p>누적된 식단 및 예상 혈당 데이터를 확인하고 개인 목표를 관리하세요.</p>
+    </section>
+
+    <div class="dashboard-grid">
+      
+      <!-- 좌측 영역: 통계 리포트 & 사용자 설정 -->
+      <aside class="side-column">
+        
+        <!-- 1) 통계 및 리포트 카드 -->
+        <div class="card stats-card">
+          <h2>📊 최근 30일 위험도 빈도 분석</h2>
+          <p class="sub-text">총 20회 식단 시뮬레이션 기준</p>
+
+          <!-- 평균 혈당 요약 -->
+          <div class="avg-box">
+            <div>
+              <span>평균 식전 혈당</span>
+              <strong>104 mg/dL</strong>
+            </div>
+            <div class="divider"></div>
+            <div>
+              <span>평균 예상 식후</span>
+              <strong class="highlight-blue">156 mg/dL</strong>
+            </div>
+          </div>
+
+          <!-- 4단계 위험도별 빈도 막대 그래프 -->
+          <div class="risk-bars">
+            <div class="bar-item">
+              <div class="bar-label">
+                <span>🟢 1단계 안전 (<140)</span>
+                <strong>45% (9회)</strong>
+              </div>
+              <div class="progress-bg"><div class="progress-fill safe" style="width: 45%;"></div></div>
+            </div>
+
+            <div class="bar-item">
+              <div class="bar-label">
+                <span>🟡 2단계 보통 (140~179)</span>
+                <strong>35% (7회)</strong>
+              </div>
+              <div class="progress-bg"><div class="progress-fill caution" style="width: 35%;"></div></div>
+            </div>
+
+            <div class="bar-item">
+              <div class="bar-label">
+                <span>🟠 3단계 위험 (180~239)</span>
+                <strong>15% (3회)</strong>
+              </div>
+              <div class="progress-bg"><div class="progress-fill warning" style="width: 15%;"></div></div>
+            </div>
+
+            <div class="bar-item">
+              <div class="bar-label">
+                <span>🔴 4단계 매우위험 (≥240)</span>
+                <strong>5% (1회)</strong>
+              </div>
+              <div class="progress-bg"><div class="progress-fill danger" style="width: 5%;"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2) 사용자 설정 카드 -->
+        <div class="card settings-card">
+          <h2>⚙️ 개인 건강 및 목표 설정</h2>
+          
+          <div class="profile-box">
+            <div class="profile-avatar">장</div>
+            <div>
+              <strong>장동균 님</strong>
+              <span class="badge-type">제2형 당뇨 관리</span>
+            </div>
+          </div>
+
+          <form class="settings-form">
+            <div class="form-group">
+              <label>목표 식전 혈당 상한 (mg/dL)</label>
+              <input type="number" value="100">
+            </div>
+
+            <div class="form-group">
+              <label>목표 식후 2시간 혈당 상한 (mg/dL)</label>
+              <input type="number" value="140">
+            </div>
+
+            <div class="form-group">
+              <label>당뇨 관리 단계</label>
+              <select>
+                <option>공복혈당장애 (전단계)</option>
+                <option selected>당뇨병 (식단·운동 병행)</option>
+                <option>당뇨병 (경구혈당강하제 복용)</option>
+                <option>당뇨병 (인슐린 투여)</option>
+              </select>
+            </div>
+
+            <div class="form-group toggle-group">
+              <span>식후 2시간 혈당 측정 알림</span>
+              <input type="checkbox" checked>
+            </div>
+
+            <button type="button" class="btn-save" onclick="alert('설정이 저장되었습니다.')">설정 저장하기</button>
+          </form>
+        </div>
+
+      </aside>
+
+      <!-- 우측 영역: 식단 및 혈당 일지 (History 타임라인) -->
+      <section class="main-column">
+        <div class="card history-card">
+          <div class="history-header">
+            <h2>📅 식단 및 예상 혈당 일지</h2>
+            <div class="filter-buttons">
+              <button class="filter-btn active">전체</button>
+              <button class="filter-btn">🟢 안전</button>
+              <button class="filter-btn">🟡 보통</button>
+              <button class="filter-btn">🟠 위험 이상</button>
+            </div>
+          </div>
+
+          <!-- 날짜 그룹 1 -->
+          <div class="date-group">
+            <div class="date-title">2026년 11월 18일 (오늘)</div>
+
+            <!-- 기록 아이템 1 (안전) -->
+            <div class="history-item">
+              <div class="item-left">
+                <span class="time-badge">점심 12:30</span>
+                <div class="meal-icon-box safe">🥗</div>
+                <div class="meal-info">
+                  <h3>현미밥 (1/2) + 두부샐러드 (1) + 닭가슴살 (1)</h3>
+                  <p class="nutrients">총 열량: <strong>445.0 kcal</strong> · 예상 상승치: <strong>+21.5 mg/dL</strong></p>
+                  <p class="sugar-flow">식전 98 → <strong>예상 식후 119.5 mg/dL</strong></p>
+                </div>
+              </div>
+              <div class="item-right">
+                <span class="risk-badge safe">안전 🟢</span>
+              </div>
+            </div>
+
+            <!-- 기록 아이템 2 (보통) -->
+            <div class="history-item">
+              <div class="item-left">
+                <span class="time-badge">아침 08:15</span>
+                <div class="meal-icon-box caution">🍞</div>
+                <div class="meal-info">
+                  <h3>식빵 (1) + 사과 (1/2) + 아메리카노 (1)</h3>
+                  <p class="nutrients">총 열량: <strong>270.0 kcal</strong> · 예상 상승치: <strong>+44.5 mg/dL</strong></p>
+                  <p class="sugar-flow">식전 105 → <strong>예상 식후 149.5 mg/dL</strong></p>
+                </div>
+              </div>
+              <div class="item-right">
+                <span class="risk-badge caution">보통 🟡</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 날짜 그룹 2 -->
+          <div class="date-group">
+            <div class="date-title">2026년 11월 17일 (어제)</div>
+
+            <!-- 기록 아이템 3 (위험) -->
+            <div class="history-item">
+              <div class="item-left">
+                <span class="time-badge">저녁 19:10</span>
+                <div class="meal-icon-box warning">🍜</div>
+                <div class="meal-info">
+                  <h3>짜장면 (1) + 만두 (1/2)</h3>
+                  <p class="nutrients">총 열량: <strong>875.0 kcal</strong> · 예상 상승치: <strong>+94.0 mg/dL</strong></p>
+                  <p class="sugar-flow">식전 112 → <strong>예상 식후 206.0 mg/dL</strong></p>
+                </div>
+              </div>
+              <div class="item-right">
+                <span class="risk-badge warning">위험 🟠</span>
+              </div>
+            </div>
+
+            <!-- 기록 아이템 4 (매우위험) -->
+            <div class="history-item">
+              <div class="item-left">
+                <span class="time-badge">간식 15:40</span>
+                <div class="meal-icon-box danger">🌶️</div>
+                <div class="meal-info">
+                  <h3>떡볶이 (1) + 콜라 (1)</h3>
+                  <p class="nutrients">총 열량: <strong>610.0 kcal</strong> · 예상 상승치: <strong>+120.0 mg/dL</strong></p>
+                  <p class="sugar-flow">식전 130 → <strong>예상 식후 250.0 mg/dL</strong></p>
+                </div>
+              </div>
+              <div class="item-right">
+                <span class="risk-badge danger">매우위험 🔴</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+</body>
+</html>
